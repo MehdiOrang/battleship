@@ -52,6 +52,11 @@ func NewGrid(ships []ship) *Grid {
 	grid := Grid{ships: realShips}
 	return &grid
 }
+
+func shootInRange(shoot Coordinate, ship ship) bool {
+
+	return false
+}
 func (grid *Grid) Shoot(shotNum int, shotLetter string) (ShootResult, error) {
 	//TODO: implement here
 	if shotNum > 10 || shotNum < 1 {
