@@ -1,4 +1,4 @@
-package tests
+package battleship
 
 import (
 	"errors"
@@ -33,6 +33,8 @@ type Grid struct {
 type ship struct {
 	start Coordinate
 	end   Coordinate
+	shape string
+	cap   int
 }
 
 type ShootResult struct {
@@ -40,14 +42,11 @@ type ShootResult struct {
 	Sunk bool
 }
 
-func NewGrid(ships []Position) *Grid {
+func NewGrid(ships []ship) *Grid {
 	var realShips []*ship
-	for _, p := range ships {
-		ship := ship{
-			start: p.Start,
-			end:   p.End,
-		}
-		realShips = append(realShips, &ship)
+	for _, ship := range ships {
+		newship := ship
+		realShips = append(realShips, &newship)
 	}
 
 	grid := Grid{ships: realShips}
@@ -55,6 +54,24 @@ func NewGrid(ships []Position) *Grid {
 }
 func (grid *Grid) Shoot(shotNum int, shotLetter string) (ShootResult, error) {
 	//TODO: implement here
+	if shotNum > 10 || shotNum < 1 {
+		return ShootResult{}, ErrOutOfGridBoundaries
+	}
+	if shotLetter[0] < 65 || shotLetter[0] > 74 {
+		return ShootResult{}, ErrIncorrectLetter
+	}
+
+	for _, v := range grid.ships {
+		if shotNum == v.start.Num && shotLetter[0] == byte(v.end.Letter) {
+			v.cap--
+			if v.cap == 0 {
+				return ShootResult{Hit: true, Sunk: true}, nil
+			}
+			return ShootResult{Hit: true, Sunk: false}, nil
+		} else {
+			return ShootResult{Hit: false, Sunk: false}, nil
+		}
+	}
 	return ShootResult{}, nil
 }
 
@@ -87,7 +104,7 @@ func TestShoot(t *testing.T) {
 		{shots: []shot{{7, "J", true}, {8, "I", false}, {9, "H", false}, {10, "G", true}}, expectedSunk: false},
 		{shots: []shot{{1, "H", true}, {8, "I", false}, {10, "CC", false}, {10, "G", true}}, expectedSunk: false, err: ErrIncorrectLetter},
 		{shots: []shot{{1, "G", false}, {1, "H", true}, {11, "G", false}}, expectedSunk: false, err: ErrOutOfGridBoundaries},
-		{shots: []shot{{1, "G", false}, {1, "H", true}, {10, "P", false}}, expectedSunk: false, err: ErrOutOfGridBoundaries},
+		{shots: []shot{{1, "G", false}, {1, "H", true}, {10, "P", false}}, expectedSunk: false, err: ErrIncorrectLetter},
 		{shots: []shot{{1, "G", false}, {12, "K", false}, {11, "G", false}}, expectedSunk: false, err: ErrOutOfGridBoundaries},
 	}
 	for ind, test := range testCases {
@@ -119,7 +136,7 @@ func TestShoot(t *testing.T) {
 	}
 }
 
-func getShips() []Position {
+func getShips() []ship {
 	// count  name              size
 	//   1    Aircraft Carrier   5
 	//   1    Battleship         4
@@ -139,34 +156,49 @@ func getShips() []Position {
 	//		9                   @
 	//	   10       @ @ @ @ @
 	//
-	var ships []Position
-	ships = append(ships, Position{
-		Start: Coordinate{2, 'A'},
-		End:   Coordinate{2, 'A'},
+	var ships []ship
+	newship := ship{
+		start: Coordinate{2, 'A'},
+		end:   Coordinate{2, 'A'},
+		shape: "multi",
+		cap:   1,
+	}
+	ships = append(ships, newship)
+	ships = append(ships, ship{
+		start: Coordinate{3, 'E'},
+		end:   Coordinate{3, 'E'},
+		shape: "multi",
+		cap:   1,
 	})
-	ships = append(ships, Position{
-		Start: Coordinate{3, 'E'},
-		End:   Coordinate{3, 'E'},
+	ships = append(ships, ship{
+		start: Coordinate{1, 'H'},
+		end:   Coordinate{4, 'H'},
+		shape: "vertic",
+		cap:   4,
 	})
-	ships = append(ships, Position{
-		Start: Coordinate{1, 'H'},
-		End:   Coordinate{4, 'H'},
+	ships = append(ships, ship{
+		start: Coordinate{5, 'B'},
+		end:   Coordinate{5, 'C'},
+		shape: "horiz",
+		cap:   2,
 	})
-	ships = append(ships, Position{
-		Start: Coordinate{5, 'B'},
-		End:   Coordinate{5, 'C'},
+	ships = append(ships, ship{
+		start: Coordinate{7, 'F'},
+		end:   Coordinate{8, 'F'},
+		shape: "vertic",
+		cap:   2,
 	})
-	ships = append(ships, Position{
-		Start: Coordinate{7, 'F'},
-		End:   Coordinate{8, 'F'},
+	ships = append(ships, ship{
+		start: Coordinate{7, 'I'},
+		end:   Coordinate{9, 'I'},
+		shape: "vertic",
+		cap:   3,
 	})
-	ships = append(ships, Position{
-		Start: Coordinate{7, 'I'},
-		End:   Coordinate{9, 'I'},
-	})
-	ships = append(ships, Position{
-		Start: Coordinate{10, 'D'},
-		End:   Coordinate{10, 'H'},
+	ships = append(ships, ship{
+		start: Coordinate{10, 'D'},
+		end:   Coordinate{10, 'H'},
+		shape: "horiz",
+		cap:   4,
 	})
 
 	return ships
