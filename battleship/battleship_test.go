@@ -33,7 +33,6 @@ type Grid struct {
 type ship struct {
 	start Coordinate
 	end   Coordinate
-	shape string
 	cap   int
 }
 
@@ -53,9 +52,22 @@ func NewGrid(ships []ship) *Grid {
 	return &grid
 }
 
-func shootInRange(shoot Coordinate, ship ship) bool {
-
-	return true
+func shootInRange(shoot Coordinate, ship *ship) bool {
+	fmt.Println(shoot, *ship, ship.start.Num, ship.end.Letter)
+	startPointNum := ship.start.Num
+	endPointNum := ship.end.Num
+	startPointLetter := ship.start.Letter
+	endPointLetter := ship.end.Letter
+	for i := startPointNum; i <= endPointNum; i++ {
+		for j := startPointLetter; j <= endPointLetter; j++ {
+			fmt.Printf(" %v %v\n", i, j)
+			if shoot.Num == i && shoot.Letter == j {
+				ship.cap -= 1
+				return true
+			}
+		}
+	}
+	return false
 }
 func (grid *Grid) Shoot(shotNum int, shotLetter string) (ShootResult, error) {
 	//TODO: implement here
@@ -67,6 +79,10 @@ func (grid *Grid) Shoot(shotNum int, shotLetter string) (ShootResult, error) {
 	}
 
 	for _, v := range grid.ships {
+
+		hitted := shootInRange(Coordinate{Num: shotNum, Letter: rune(shotLetter[0])}, v)
+		fmt.Println(v, hitted)
+
 		if shotNum == v.start.Num && shotLetter[0] == byte(v.end.Letter) {
 			v.cap--
 			if v.cap == 0 {
@@ -165,44 +181,37 @@ func getShips() []ship {
 	newship := ship{
 		start: Coordinate{2, 'A'},
 		end:   Coordinate{2, 'A'},
-		shape: "multi",
 		cap:   1,
 	}
 	ships = append(ships, newship)
 	ships = append(ships, ship{
 		start: Coordinate{3, 'E'},
 		end:   Coordinate{3, 'E'},
-		shape: "multi",
 		cap:   1,
 	})
 	ships = append(ships, ship{
 		start: Coordinate{1, 'H'},
 		end:   Coordinate{4, 'H'},
-		shape: "vertic",
 		cap:   4,
 	})
 	ships = append(ships, ship{
 		start: Coordinate{5, 'B'},
 		end:   Coordinate{5, 'C'},
-		shape: "horiz",
 		cap:   2,
 	})
 	ships = append(ships, ship{
 		start: Coordinate{7, 'F'},
 		end:   Coordinate{8, 'F'},
-		shape: "vertic",
 		cap:   2,
 	})
 	ships = append(ships, ship{
 		start: Coordinate{7, 'I'},
 		end:   Coordinate{9, 'I'},
-		shape: "vertic",
 		cap:   3,
 	})
 	ships = append(ships, ship{
 		start: Coordinate{10, 'D'},
 		end:   Coordinate{10, 'H'},
-		shape: "horiz",
 		cap:   4,
 	})
 
