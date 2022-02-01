@@ -60,7 +60,6 @@ func shootInRange(shoot Coordinate, ship *ship) bool {
 	endPointLetter := ship.end.Letter
 	for i := startPointNum; i <= endPointNum; i++ {
 		for j := startPointLetter; j <= endPointLetter; j++ {
-			fmt.Printf(" %v %v\n", i, j)
 			if shoot.Num == i && shoot.Letter == j {
 				ship.cap -= 1
 				return true
