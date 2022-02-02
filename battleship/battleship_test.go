@@ -53,7 +53,6 @@ func NewGrid(ships []ship) *Grid {
 }
 
 func shootInRange(shoot Coordinate, ship *ship) bool {
-	fmt.Println(shoot, *ship, ship.start.Num, ship.end.Letter)
 	startPointNum := ship.start.Num
 	endPointNum := ship.end.Num
 	startPointLetter := ship.start.Letter
@@ -70,29 +69,25 @@ func shootInRange(shoot Coordinate, ship *ship) bool {
 }
 func (grid *Grid) Shoot(shotNum int, shotLetter string) (ShootResult, error) {
 	//TODO: implement here
+	shoot := Coordinate{Num: shotNum, Letter: rune(shotLetter[0])}
 	if shotNum > 10 || shotNum < 1 {
 		return ShootResult{}, ErrOutOfGridBoundaries
 	}
 	if shotLetter[0] < 65 || shotLetter[0] > 74 {
 		return ShootResult{}, ErrIncorrectLetter
 	}
+	shootResult := ShootResult{}
 
 	for _, v := range grid.ships {
 
-		hitted := shootInRange(Coordinate{Num: shotNum, Letter: rune(shotLetter[0])}, v)
-		fmt.Println(v, hitted)
-
-		if shotNum == v.start.Num && shotLetter[0] == byte(v.end.Letter) {
-			v.cap--
-			if v.cap == 0 {
-				return ShootResult{Hit: true, Sunk: true}, nil
-			}
-			return ShootResult{Hit: true, Sunk: false}, nil
-		} else {
-			return ShootResult{Hit: false, Sunk: false}, nil
+		if shootInRange(shoot, v) {
+			shootResult.Hit = true
+		}
+		if v.cap == 0 {
+			shootResult.Sunk = true
 		}
 	}
-	return ShootResult{}, nil
+	return shootResult, nil
 }
 
 func (grid *Grid) ResetShips() {
@@ -134,6 +129,7 @@ func TestShoot(t *testing.T) {
 			for _, shot := range test.shots {
 				var err error
 				latestShootResult, err = grid.Shoot(shot.num, shot.letter)
+
 				if !cmp.Equal(shot.expectedHit, latestShootResult.Hit) {
 					t.Log(cmp.Diff(shot.expectedHit, latestShootResult.Hit))
 					t.Fail()
@@ -204,14 +200,14 @@ func getShips() []ship {
 		cap:   2,
 	})
 	ships = append(ships, ship{
-		start: Coordinate{7, 'I'},
-		end:   Coordinate{9, 'I'},
+		start: Coordinate{7, 'J'},
+		end:   Coordinate{9, 'J'},
 		cap:   3,
 	})
 	ships = append(ships, ship{
 		start: Coordinate{10, 'D'},
 		end:   Coordinate{10, 'H'},
-		cap:   4,
+		cap:   5,
 	})
 
 	return ships
